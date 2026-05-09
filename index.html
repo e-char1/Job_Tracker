@@ -1,1 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        input, select, button { width: 100%; padding: 12px; margin-top: 10px; box-sizing: border-box; font-size: 16px; }
+        button { background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .job-card { background: #f8f9fa; padding: 15px; margin-top: 15px; border-radius: 5px; border-left: 5px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h2>Add Application</h2>
+    <input type="text" id="company" placeholder="Company Name" required>
+    <input type="text" id="position" placeholder="Position" required>
+    <select id="status">
+        <option value="Applied">Applied</option>
+        <option value="Interview">Interview</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Offer">Offer</option>
+    </select>
+    <button onclick="addJob()">Save</button>
 
+    <h2>My Applications</h2>
+    <div id="jobList"></div>
+
+    <script>
+        // Load jobs instantly from local storage
+        let jobs = JSON.parse(localStorage.getItem('jobs')) || [];
+
+        function renderJobs() {
+            const list = document.getElementById('jobList');
+            list.innerHTML = '';
+            jobs.forEach((job, index) => {
+                list.innerHTML += `
+                    <div class="job-card">
+                        <strong>${job.company}</strong> - ${job.position}
+                        <br> Status: <strong>${job.status}</strong>
+                        <button onclick="deleteJob(${index})" style="background: #dc3545; margin-top: 10px;">Remove</button>
+                    </div>
+                `;
+            });
+        }
+
+        function addJob() {
+            const company = document.getElementById('company').value;
+            const position = document.getElementById('position').value;
+            const status = document.getElementById('status').value;
+            
+            if(!company || !position) return alert("Fill in all fields");
+
+            jobs.push({ company, position, status });
+            localStorage.setItem('jobs', JSON.stringify(jobs));
+            renderJobs();
+            
+            // Clear inputs
+            document.getElementById('company').value = '';
+            document.getElementById('position').value = '';
+        }
+
+        function deleteJob(index) {
+            jobs.splice(index, 1);
+            localStorage.setItem('jobs', JSON.stringify(jobs));
+            renderJobs();
+        }
+
+        // Register Service Worker for PWA installability
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        renderJobs();
+    </script>
+</body>
+</html>
